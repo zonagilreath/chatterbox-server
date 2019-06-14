@@ -20,12 +20,20 @@ this file and include it in basic-server.js so that it actually works.
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
+const messages = require('./Storage');
+
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'access-control-allow-headers': 'content-type, accept',
   'access-control-max-age': 10 // Seconds.
 };
+
+const postHandler = (message) => {
+  message.createdAt = new Date();
+  messages.results.push(message);
+};
+
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -47,21 +55,31 @@ var requestHandler = function(request, response) {
 
 
   // The outgoing status.
-  var statusCode = 200;
+  var statusCode;
   
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
   let responseBody = 'Hello, World!';
+  // console.log(request.url);
+  // console.log(request.method);
   if (request.url === '/classes/messages') {
     if (request.method === 'POST') {
       // console.log(request, '\n*******************\n')
       request.on('data', function(chunk) {
         console.log('Received body data:');
         console.log(chunk.toString());
-        statusCode = 201;
+        postHandler(JSON.parse(chunk));
+        console.log(messages);
       });
+      statusCode = 201;
+    } else if (request.method === 'GET'){
+      statusCode = 200;
+      responseBody = JSON.stringify(messages);
+    } else {
+      statusCode = 400;
+      responseBody = 'Currently only accepting GET/POST';
     }
   } else {
     statusCode = 404;
@@ -72,29 +90,22 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'application/json';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
+  // console.log(statusCode);
   response.writeHead(statusCode, headers);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
   // up in the browser.
-  
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
   response.end(responseBody);
 };
 
-const getHandler = () => {
-
-};
-
-const postHandler = () => {
-
-};
 
 module.exports.requestHandler = requestHandler;
