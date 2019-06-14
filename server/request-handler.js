@@ -21,62 +21,81 @@ this file and include it in basic-server.js so that it actually works.
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
 const messages = require('./Storage');
+const URL = require('url').parse;
+const _ = require('lodash');
+const fs = require('fs');
 
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
+  'access-control-allow-headers': 'content-type, accept,',
   'access-control-max-age': 10 // Seconds.
 };
 
 const postHandler = (message) => {
   message.createdAt = new Date();
+  console.log(message);
   messages.results.push(message);
+  // fs.readFile('messages.json', (err, stored) => {
+  //   let messages = JSON.parse(stored);
+  //   messages.push(message);
+  //   let data = JSON.stringify(messages);
+  //   fs.writeFile('messages.json', data, (err) => {
+  //     if (err) console.log(err);
+  //     console.log('Successfully Written to File');
+  //     response.writeHead(statusCode, headers);
+  //     response.end(responseBody);
+  //   })
+  // });
 };
 
 
+
 var requestHandler = function(request, response) {
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
-
-  // Do some basic logging.
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
-  // console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  // console.log(Object.keys(request));
-
-
-  // The outgoing status.
-  var statusCode;
-  
-
+  var statusCode;  
+  const url = URL(request.url);
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
   let responseBody = 'Hello, World!';
   // console.log(request.url);
   // console.log(request.method);
-  if (request.url === '/classes/messages') {
+
+  // Tell the client we are sending them plain text.
+  //
+  // You will need to change this if you are sending something
+  // other than plain text, like JSON or HTML.
+  headers['Content-Type'] = 'application/json';
+
+  if (url.pathname === '/classes/messages') {
     if (request.method === 'POST') {
       // console.log(request, '\n*******************\n')
       request.on('data', function(chunk) {
-        console.log('Received body data:');
-        console.log(chunk.toString());
+        // console.log('Received body data:');
+        // console.log(chunk.toString());
         postHandler(JSON.parse(chunk));
-        console.log(messages);
+        // console.log(messages);
+        // response.writeHead(statusCode, headers);
+        // response.end(responseBody);
       });
+      responseBody = '{"message":"post received"}';
       statusCode = 201;
-    } else if (request.method === 'GET'){
+    } else if (request.method === 'GET') {
       statusCode = 200;
-      responseBody = JSON.stringify(messages);
+      // fs.readFile('messages.json', (err, stored) => {
+      //   console.log(stored);
+      //   stored = JSON.parse(stored);
+      //   console.log(stored);
+      //   let results = _.sortBy(stored, ['createdAt']).reverse();
+      //   responseBody = JSON.stringify({results: stored});
+      //   response.writeHead(statusCode, headers);
+      //   response.end(responseBody);
+      // })
+      let results = _.sortBy(messages.results, ['createdAt']).reverse();
+      responseBody = JSON.stringify({results});
+    } else if (request.method === 'OPTIONS') {
+      statusCode = 200;
+      responseBody = '{"Messages": "/classes/messages"}';
     } else {
       statusCode = 400;
       responseBody = 'Currently only accepting GET/POST';
@@ -85,12 +104,6 @@ var requestHandler = function(request, response) {
     statusCode = 404;
     responseBody = 'Not found';
   }
-
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'application/json';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
