@@ -11,28 +11,23 @@ var App = {
     RoomsView.initialize();
     MessagesView.initialize();
 
-    // Fetch initial batch of messages
     App.startSpinner();
     App.fetch(App.stopSpinner);
 
-    //Pull new messages every 5 seconds
     setInterval(App.fetch, 3000);
 
   },
 
   fetch: function(callback = ()=>{}) {
     Parse.readAll((data) => {
-      // examine the response from the server request:
-      //this will update messages AND then render once completed
+
+      data = JSON.parse(data);
+      console.log(data);
       if (!data.results || !data.results.length) {
         return;
       }
-
       Rooms.update(data.results, RoomsView.render);
       Messages.update(data.results, MessagesView.render);
-      // console.groupCollapsed(Messages._data)
-      // console.log(data);
-
       callback();
     });
   },
