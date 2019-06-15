@@ -2,21 +2,21 @@ var request = require('request');
 var expect = require('chai').expect;
 
 describe('server', function() {
-  it('should respond to GET requests for /classes/messages with a 200 status code', function(done) {
+  xit('should respond to GET requests for /classes/messages with a 200 status code', function(done) {
     request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
       expect(response.statusCode).to.equal(200);
       done();
     });
   });
 
-  it('should send back parsable stringified JSON', function(done) {
+  xit('should send back parsable stringified JSON', function(done) {
     request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
       expect(JSON.parse.bind(this, body)).to.not.throw();
       done();
     });
   });
 
-  it('should send back an object', function(done) {
+  xit('should send back an object', function(done) {
     request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
       var parsedBody = JSON.parse(body);
       expect(parsedBody).to.be.an('object');
@@ -24,7 +24,7 @@ describe('server', function() {
     });
   });
 
-  it('should send an object containing a `results` array', function(done) {
+  xit('should send an object containing a `results` array', function(done) {
     request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
       var parsedBody = JSON.parse(body);
       expect(parsedBody).to.be.an('object');
@@ -33,7 +33,7 @@ describe('server', function() {
     });
   });
 
-  it('should accept POST requests to /classes/messages', function(done) {
+  xit('should accept POST requests to /classes/messages', function(done) {
     var requestParams = {method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
       json: {
@@ -47,7 +47,7 @@ describe('server', function() {
     });
   });
 
-  it('should respond with messages that were previously posted', function(done) {
+  xit('should respond with messages that were previously posted', function(done) {
     var requestParams = {method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
       json: {
@@ -66,9 +66,27 @@ describe('server', function() {
     });
   });
 
-  it('Should 404 when asked for a nonexistent endpoint', function(done) {
+  xit('Should 404 when asked for a nonexistent endpoint', function(done) {
     request('http://127.0.0.1:3000/arglebargle', function(error, response, body) {
       expect(response.statusCode).to.equal(404);
+      done();
+    });
+  });
+
+  it('should respond to PUT requests with a 400 code', function(done) {
+    var requestParams = {method: 'PUT',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        text: 'Do my bidding!'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      // Now if we request the log, that message we posted should be there:
+      // var parsedBody = JSON.parse(body);
+      expect(response.statusCode).to.equal(400);
+      expect(body).to.be.an('object');
+      expect(body.Error).to.equal('Currently only accepting GET and POST requests');
       done();
     });
   });

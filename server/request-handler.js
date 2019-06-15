@@ -99,7 +99,7 @@ var requestHandler = function(request, response) {
       responseBody = '{"Messages": "/classes/messages"}';
     } else {
       statusCode = 400;
-      responseBody = 'Currently only accepting GET/POST';
+      responseBody = JSON.stringify({Error: "Currently only accepting GET and POST requests"});
     }
   } else {
     statusCode = 404;
