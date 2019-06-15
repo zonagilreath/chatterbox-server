@@ -1,1 +1,1 @@
-module.exports = {results: []};
+module.exports = {results: [{'roomname':'failroom', 'username':'Me', 'text': 'please work'}]};
