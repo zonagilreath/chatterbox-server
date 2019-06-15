@@ -34,6 +34,7 @@ var defaultCorsHeaders = {
 
 const postHandler = (message) => {
   message.createdAt = new Date();
+  message.objectId = Math.floor(Math.random() * 1000000);
   console.log(message);
   messages.results.push(message);
   // fs.readFile('messages.json', (err, stored) => {

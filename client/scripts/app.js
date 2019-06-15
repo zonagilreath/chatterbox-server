@@ -30,7 +30,8 @@ var App = {
 
       Rooms.update(data.results, RoomsView.render);
       Messages.update(data.results, MessagesView.render);
-      console.log(data);
+      // console.groupCollapsed(Messages._data)
+      // console.log(data);
 
       callback();
     });
