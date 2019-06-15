@@ -57,8 +57,6 @@ var requestHandler = function(request, response) {
   const url = URL(request.url);
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
-
-  let responseBody = 'Hello, World!';
   // console.log(request.url);
   // console.log(request.method);
 

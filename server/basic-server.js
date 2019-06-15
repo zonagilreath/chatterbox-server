@@ -1,42 +1,42 @@
-/* Import node's http module: */
-var http = require('http');
-const handleRequest = require('./request-handler').requestHandler;
+const http = require('http');
+const express = require('express');
+const path = require('path');
+const app = express();
+const messages = require('./Storage');
+const URL = require('url').parse;
+const _ = require('lodash');
+const fs = require('fs');
 
+app.use('/public', express.static(path.join(__dirname, '../public')));
+// const handleRequest = require('./request-handler').requestHandler;
 
-// Every server needs to listen on a port with a unique number. The
-// standard port for HTTP servers is port 80, but that port is
-// normally already claimed by another server and/or not accessible
-// so we'll use a standard testing port like 3000, other common development
-// ports are 8080 and 1337.
-var port = 3000;
+var port = 8000;
 
-// For now, since you're running this server on your local machine,
-// we'll have it listen on the IP address 127.0.0.1, which is a
-// special address that always refers to localhost.
-var ip = '127.0.0.1';
+// var ip = '127.0.0.1';
 
+// var server = http.createServer(handleRequest);
+// console.log('Listening on http://' + ip + ':' + port);
+// server.listen(port, ip);
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../index.html'));
+});
 
-// We use node's http module to create a server.
-//
-// The function we pass to http.createServer will be used to handle all
-// incoming requests.
-//
-// After creating the server, we will tell it to listen on the given port and IP. */
-var server = http.createServer(handleRequest);
-console.log('Listening on http://' + ip + ':' + port);
-server.listen(port, ip);
+app.get('/classes/messages', (req, res) => {
+  let results = _.sortBy(messages.results, ['createdAt']).reverse();
+  res.send(JSON.stringify(results));
+});
 
-// To start this server, run:
-//
-//   node basic-server.js
-//
-// on the command line.
-//
-// To connect to the server, load http://127.0.0.1:3000 in your web
-// browser.
-//
-// server.listen() will continue running as long as there is the
-// possibility of serving more requests. To stop your server, hit
-// Ctrl-C on the command line.
+app.post('/classes/messages', (req, res) => {
+  console.log(req);
+  res.send(JSON.stringify({message: "got a post request!"}))
+  // request.on('data', function(message) {
+  //   message = JSON.parse(message);
+  //   message.createdAt = new Date();
+  //   message.objectId = Math.floor(Math.random() * 1000000);
+  //   console.log(message);
+  //   messages.results.push(message);
+  // });
+});
 
+app.listen(port, () => console.log(`Chattebox app listening on port ${port}!`))
